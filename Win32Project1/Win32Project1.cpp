@@ -229,6 +229,10 @@ void CheckFormula(HWND hDlg,int num) {
 	}
 }
 
+//int CheckPriority(char symbol) {
+//
+//}
+
 void Calculation() {
 	float pop1;
 	float pop2;
@@ -282,7 +286,7 @@ void GetExp(HWND hDlg) {
 	printf("Size of Stack : %d\n", GetStackSize());
 	int StackSize = GetStackSize();
 	int oldpr = 4;
-	int hpr = 0;
+	bool hpr = false;
 	int pr;
 	int pop1;
 	int pop2;
@@ -303,26 +307,30 @@ void GetExp(HWND hDlg) {
 			InitTempArray();
 			if (calcFlag) {
 				Calculation();
+				SymStackPush(InputNum[i]);
 				calcFlag = false;
 			}
-
-			if (oldpr == 4) {														// 첫 번째 연산자.
+			else if (oldpr == 4) {														// 첫 번째 연산자.
 				SymStackPush(InputNum[i]);											// 연산자를 스택에 쌓는다.
 				oldpr = pr;
 			}
 			else if (oldpr < pr) {													// 새로운 연산자 우선순위가 기존 우선순위 보다 높을 경우 */ -> +-
 				Calculation();
 				SymStackPush(InputNum[i]);
+				
+				oldpr = pr;
+
 			}
 			else if (oldpr == pr) {													// 새로운 연산자 우선순위가 기존 우선순위와 같을 경우
+			
+				Calculation();
 				SymStackPush(InputNum[i]);
-				calcFlag = true;
 				oldpr = pr;
 			}
 			else if (oldpr > pr) {													// 새로운 연산자 우선순위가 기존 우선순위 보다 낮을 경우 +- -> */
 				SymStackPush(InputNum[i]);
-				hpr = pr;
 				calcFlag = true;
+				//oldpr = pr;
 			}
 		}
 
@@ -340,30 +348,23 @@ void GetExp(HWND hDlg) {
 			//TempNum[tn] = atof(TempArray);
 			for(int x = 0 ; x<MAX_STACK_SIZE;x++){
 				/*NumStackPush(atof(TempArray));*/
+				printf("SymStack[0] = %c \n", StackSymbol[0]);
+				printf("SymStack[1] = %c \n", StackSymbol[1]);
 				Calculation();
-				if (IsSymStackEmpty) {
+				if (IsSymStackEmpty()) {
 					printf("NumStack : %s\n", StackNum);
-					printf("NumStack[1] = %d \n", StackNum[1]);
+					printf("NumStack[0] = %f \n", StackNum[0]);
+					printf("NumStack[1] = %f \n", StackNum[1]);
+
+					printf("SymStack[0] = %c \n", StackNum[0]);
+					printf("SymStack[1] = %c \n", StackNum[1]);
 					InitTempArray();
 					SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0], TRUE);
 					return;
 				}
 			}
-			StackNum[0];
-			StackNum[1];
-			printf("NumStack : %s\n", StackNum);
-
-			printf("NumStack[0] = %d \n", StackNum[0]);
-			InitTempArray();
-
-			SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0],TRUE);
-			
-
 		}
 	}
-
-
-
 }
 
 void showOutput(HWND hDlg) {
@@ -392,7 +393,7 @@ void ClearArray(HWND hDlg) {
 	for (int a = 0; a < sizeof(InputNum); a++) {
 		InputNum[a] = '\0';
 	}
-	int i = 0;
+	//int i = 0;
 	SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
 	
 	printf("InputNum : %s \n", InputNum);
