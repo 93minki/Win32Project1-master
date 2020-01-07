@@ -126,7 +126,7 @@ void SymStackPush(char value) {
 	}
 }
 
-char NumStackPop() {
+float NumStackPop() {
 	float rtnum;
 	if (IsNumStackEmpty() == true) {
 		printf("Num Stack is Empty!\n");
