@@ -17,38 +17,20 @@ WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
 char InputNum[MAX_STACK_SIZE];
-int np;
-
-char GetNum[MAX_STACK_SIZE];
-char totalSign[10];
-char arraytemp[MAX_STACK_SIZE];
-
 char TempArray[MAX_STACK_SIZE];
-char arrayclear[MAX_STACK_SIZE] = { '\0', };
+float StackNum[MAX_STACK_SIZE];									// Get Number in Stack
+char StackSymbol[MAX_STACK_SIZE];								// Get Sign in Stack
 
-
-int TempNum[MAX_STACK_SIZE];
-char TempSign[MAX_STACK_SIZE];
-
-
-char stack[MAX_STACK_SIZE];									// Stack
-int top = -1;										// Init Stack Point
-
+int np;
 int Search_n = 0;									// Search Number 
 int Search_s = 0;									// Search Sign
 
-float StackNum[MAX_STACK_SIZE];									// Get Number in Stack
 int nsp = -1;
-char StackSymbol[MAX_STACK_SIZE];								// Get Sign in Stack
 int ssp = -1;
-
-int k = 0;
-int arraySize;
-int rstsum;
-
 int priority;
 
-int testString[MAX_STACK_SIZE];
+
+
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 //ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -145,7 +127,7 @@ void SymStackPush(char value) {
 }
 
 char NumStackPop() {
-	int rtnum;
+	float rtnum;
 	if (IsNumStackEmpty() == true) {
 		printf("Num Stack is Empty!\n");
 	}
@@ -229,10 +211,6 @@ void CheckFormula(HWND hDlg,int num) {
 	}
 }
 
-//int CheckPriority(char symbol) {
-//
-//}
-
 void Calculation() {
 	float pop1;
 	float pop2;
@@ -285,44 +263,42 @@ void GetExp(HWND hDlg) {
 	printf("Get Number : %s\n", InputNum);
 	printf("Size of Stack : %d\n", GetStackSize());
 	int StackSize = GetStackSize();
-	int oldpr = 4;
-	bool hpr = false;
+	int oldpr = 4;																	// 초기 우선순위를 4로 설정하여 어떤 연산기호가 들어와도 입력되도록 설정
 	int pr;
 	int pop1;
 	int pop2;
-	bool calcFlag = false;
+	bool calcFlag = false;															// 연산자 우선순위에 의해 먼저 연산해야 하는 경우 Flag를 사용해서 연산
 	int rst = 0;
 	char opr;
+
+	char showfloat[MAX_STACK_SIZE];
 
 	for (int i = 0; i < StackSize; i++) {
 		// if Stack Value is Sign 
 		if (InputNum[i] == '+' || InputNum[i] == '-' || InputNum[i] == '*' || InputNum[i] == '/') {
 			pr = makePriority(InputNum[i]);											// 현재 연산자의 우선순위를 구한다.
-			Search_s = i;
-			for (int tp = 0; Search_n < Search_s; Search_n++, tp++) {
+			Search_s = i;															// .
+			for (int tp = 0; Search_n < Search_s; Search_n++, tp++) {				// InputNum[i] 이전 숫자를 TempArray에 저장
 				TempArray[tp] = InputNum[Search_n];
 			}
-			Search_n = Search_s + 1;
-			NumStackPush(atof(TempArray));											// 피연산자를 스택에 쌓는다.
-			InitTempArray();
-			if (calcFlag) {
-				Calculation();
+			Search_n = Search_s + 1;												// InputNum[i]는 연산기호 이기 때문에 그 다음 부터 찾는다.
+			NumStackPush(atof(TempArray));											// 피연산자 숫자로 변환하여 스택에 쌓는다.
+			InitTempArray();														// TempArray 초기화
+			if (calcFlag) {															
+				Calculation();								
 				SymStackPush(InputNum[i]);
 				calcFlag = false;
 			}
-			else if (oldpr == 4) {														// 첫 번째 연산자.
+			else if (oldpr == 4) {													// 첫 번째 연산자.
 				SymStackPush(InputNum[i]);											// 연산자를 스택에 쌓는다.
-				oldpr = pr;
+				oldpr = pr;															// 기존 우선순위는 현재 우선순위가 된다.
 			}
 			else if (oldpr < pr) {													// 새로운 연산자 우선순위가 기존 우선순위 보다 높을 경우 */ -> +-
-				Calculation();
-				SymStackPush(InputNum[i]);
-				
+				Calculation();														// 연산
+				SymStackPush(InputNum[i]);											// 연산 후 연산기호를 스택에 쌓는다.
 				oldpr = pr;
-
 			}
 			else if (oldpr == pr) {													// 새로운 연산자 우선순위가 기존 우선순위와 같을 경우
-			
 				Calculation();
 				SymStackPush(InputNum[i]);
 				oldpr = pr;
@@ -341,26 +317,15 @@ void GetExp(HWND hDlg) {
 				TempArray[tp] = InputNum[Search_n];
 			}
 			NumStackPush(atof(TempArray));											// 피연산자를 스택에 쌓는다.
-			if (calcFlag) {
-				Calculation();
-				calcFlag = false;
-			}
-			//TempNum[tn] = atof(TempArray);
 			for(int x = 0 ; x<MAX_STACK_SIZE;x++){
-				/*NumStackPush(atof(TempArray));*/
-				printf("SymStack[0] = %c \n", StackSymbol[0]);
-				printf("SymStack[1] = %c \n", StackSymbol[1]);
 				Calculation();
 				if (IsSymStackEmpty()) {
-					printf("NumStack : %s\n", StackNum);
-					printf("NumStack[0] = %f \n", StackNum[0]);
-					printf("NumStack[1] = %f \n", StackNum[1]);
-
-					printf("SymStack[0] = %c \n", StackNum[0]);
-					printf("SymStack[1] = %c \n", StackNum[1]);
 					InitTempArray();
-					SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0], TRUE);
-					return;
+					printf("StackNum[0] : %f", StackNum[0]);
+					sprintf(showfloat, "%f", StackNum[0]);
+					//SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0], TRUE);
+					SetDlgItemText(hDlg, IDC_EDIT2, showfloat);
+					break;
 				}
 			}
 		}
@@ -390,13 +355,23 @@ void rmArray(HWND hDlg) {
 }
 
 void ClearArray(HWND hDlg) {
-	for (int a = 0; a < sizeof(InputNum); a++) {
-		InputNum[a] = '\0';
-	}
-	//int i = 0;
-	SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
-	
-	printf("InputNum : %s \n", InputNum);
+	//for (int a = 0; a < sizeof(InputNum); a++) {
+	//	InputNum[a] = '\0';
+	//}
+	//for (int a = 0; a < MAX_STACK_SIZE; a++) {
+	//	StackNum[a] = '\0';
+	//	StackSymbol[a] = '\0';
+	//	if (StackNum[a] == '\0' && StackSymbol[a] == '\0') {
+	//		break;
+	//	}
+	//}
+	//nsp = 0;
+	//ssp = 0;
+	//np = 0;
+	////int i = 0;
+	//SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
+	//
+	//printf("InputNum : %s \n", InputNum);
 }
 // 정보 대화 상자의 메시지 처리기입니다.
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
