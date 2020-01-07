@@ -37,7 +37,7 @@ int top = -1;										// Init Stack Point
 int Search_n = 0;									// Search Number 
 int Search_s = 0;									// Search Sign
 
-int StackNum[MAX_STACK_SIZE];									// Get Number in Stack
+float StackNum[MAX_STACK_SIZE];									// Get Number in Stack
 int nsp = -1;
 char StackSymbol[MAX_STACK_SIZE];								// Get Sign in Stack
 int ssp = -1;
@@ -90,11 +90,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    return TRUE;
 }
-
-struct oper {
-	int priority;
-	char op;
-}oper;
 
 bool IsNumStackEmpty() {
 	if (nsp < 0) {
@@ -150,20 +145,28 @@ void SymStackPush(char value) {
 }
 
 char NumStackPop() {
+	int rtnum;
 	if (IsNumStackEmpty() == true) {
 		printf("Num Stack is Empty!\n");
 	}
 	else {
-		return StackNum[nsp--];
+		rtnum = StackNum[nsp];
+		StackNum[nsp] = '\0';
+		nsp--;
+		return rtnum;
 	}
 }
 
 char SymStackPop() {
+	char rtchar;
 	if (IsSymStackEmpty() == true) {
 		printf("Sym Stack is Empty!\n");
 	}
 	else {
-		return StackSymbol[ssp--];
+		rtchar = StackSymbol[ssp];
+		StackSymbol[ssp] = '\0';
+		ssp--;
+		return rtchar;
 	}
 }
 
@@ -223,6 +226,35 @@ void CheckFormula(HWND hDlg,int num) {
 	}
 }
 
+void Calculation() {
+	int pop1;
+	int pop2;
+	char opr;
+
+	int rst;
+	pop1 = NumStackPop();
+	pop2 = NumStackPop();
+	opr = SymStackPop();
+
+	switch (opr) {														// 꺼낸 연산자에 따라 연산을 수행하고 그 값을 rst에 저장.
+	case '+':
+		rst = pop2 + pop1;
+		NumStackPush(rst);												// 그 값을 스택에 다시 쌓는다.
+		break;
+	case '-':
+		rst = pop2 - pop1;
+		NumStackPush(rst);
+		break;
+	case '*':
+		rst = pop2 * pop1;
+		NumStackPush(rst);
+		break;
+	case '/':
+		rst = pop2 / pop1;
+		NumStackPush(rst);
+		break;
+	}
+}
 int makePriority(char symbol) {
 	switch (symbol) {
 	case '+':
@@ -250,6 +282,7 @@ void GetExp(HWND hDlg) {
 	int tn = 0;
 	int ts = 0;
 	int oldpr = 4;
+	int hpr = 0;
 	int pr;
 	int pop1;
 	int pop2;
@@ -269,63 +302,28 @@ void GetExp(HWND hDlg) {
 			Search_n = Search_s + 1;
 			NumStackPush(atoi(TempArray));											// 피연산자를 스택에 쌓는다.
 			if (calcFlag) {
-				pop1 = NumStackPop();												// 피 연산자 두개와 연산자 1개를 꺼낸다.
-				pop2 = NumStackPop();
-				opr = SymStackPop();
-
-				switch (opr) {														// 꺼낸 연산자에 따라 연산을 수행하고 그 값을 rst에 저장.
-				case '+':
-					rst = pop2 + pop1;
-					NumStackPush(rst);												// 그 값을 스택에 다시 쌓는다.
-					break;
-				case '-':
-					rst = pop2 - pop1;
-					NumStackPush(rst);
-					break;
-				case '*':
-					rst = pop2 * pop1;
-					NumStackPush(rst);
-					break;
-				case '/':
-					rst = pop2 / pop1;
-					NumStackPush(rst);
-					break;
-				}
+				Calculation();
 				calcFlag = false;
 			}
 
-			if (oldpr > pr) {														// 새로운 연산자 우선순위가 기존 우선순위보다 작을 경우
-				SymStackPush(InputNum[i]);											// 연산자를 연산자 스택에 쌓는다.
+			if (oldpr == 4) {														// 첫 번째 연산자.
+				SymStackPush(InputNum[i]);											// 연산자를 스택에 쌓는다.
+				oldpr = pr;
+			}
+			else if (oldpr < pr) {													// 새로운 연산자 우선순위가 기존 우선순위 보다 높을 경우 */ -> +-
+
+			}
+			else if (oldpr == pr) {													// 새로운 연산자 우선순위가 기존 우선순위와 같을 경우
+				SymStackPush(InputNum[i]);
 				calcFlag = true;
 				oldpr = pr;
 			}
-			else
-			{																		// 그 외, 새로운 연산자 우선순위가 같거나 클 경우	
-				pop1 = NumStackPop();												// 피 연산자 두개와 연산자 1개를 꺼낸다.
-				pop2 = NumStackPop();
-				opr = SymStackPop();
-
-				switch (opr) {														// 꺼낸 연산자에 따라 연산을 수행하고 그 값을 rst에 저장.
-				case '+':
-					rst = pop2 + pop1;
-					NumStackPush(rst);												// 그 값을 스택에 다시 쌓는다.
-					break;
-				case '-':
-					rst = pop2 - pop1;
-					NumStackPush(rst);
-					break;
-				case '*':
-					rst = pop2 * pop1;
-					NumStackPush(rst);
-					break;
-				case '/':
-					rst = pop2 / pop1;
-					NumStackPush(rst);
-					break;
-				}
+			else if (oldpr > pr) {													// 새로운 연산자 우선순위가 기존 우선순위 보다 낮을 경우 +- -> */
 				SymStackPush(InputNum[i]);
+				InitTempArray();
+				hpr = pr;
+				calcFlag = true;
 			}
-			
 		}
 
 		if (InputNum[i + 1] == '\0') {
@@ -333,37 +331,33 @@ void GetExp(HWND hDlg) {
 			for (int tp = 0; Search_n < Search_s; Search_n++, tp++) {
 				TempArray[tp] = InputNum[Search_n];
 			}
-			//TempNum[tn] = atoi(TempArray);
-			NumStackPush(atoi(TempArray));
-			pop1 = NumStackPop();												// 피 연산자 두개와 연산자 1개를 꺼낸다.
-			pop2 = NumStackPop();
-			opr = SymStackPop();
-
-			switch (opr) {		
-				// 꺼낸 연산자에 따라 연산을 수행하고 그 값을 rst에 저장.
-			case '+':
-				rst = pop2 + pop1;
-				NumStackPush(rst);												// 그 값을 스택에 다시 쌓는다.
-				break;
-			case '-':
-				rst = pop2 - pop1;
-				NumStackPush(rst);
-				break;
-			case '*':
-				rst = pop2 * pop1;
-				NumStackPush(rst);
-				break;
-			case '/':
-				rst = pop2 / pop1;
-				NumStackPush(rst);
-				break;
+			NumStackPush(atoi(TempArray));											// 피연산자를 스택에 쌓는다.
+			if (calcFlag) {
+				Calculation();
+				calcFlag = false;
 			}
-			printf("NumStack[1] = %d \n", StackNum[1]);
+			//TempNum[tn] = atoi(TempArray);
+			for(int x = 0 ; x<MAX_STACK_SIZE;x++){
+				/*NumStackPush(atoi(TempArray));*/
+				Calculation();
+				if (IsSymStackEmpty) {
+					printf("NumStack : %s\n", StackNum);
+					printf("NumStack[1] = %d \n", StackNum[1]);
+					InitTempArray();
+					SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0], TRUE);
+					return;
+				}
+			}
+			StackNum[0];
+			StackNum[1];
+			printf("NumStack : %s\n", StackNum);
+
+			printf("NumStack[0] = %d \n", StackNum[0]);
 			InitTempArray();
 
 
 			SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0],TRUE);
-
+			
 
 		}
 	}
@@ -374,40 +368,7 @@ void GetExp(HWND hDlg) {
 
 void showOutput(HWND hDlg) {
 	
-	int tmpnum1;
-	int tmpnum2;
-	char tmpsym1;
-	char tmpsym2;
-
 	GetExp(hDlg);
-	
-	//switch (TempSign[ts - 1]) {
-	//case '+':
-	//	restmp = TempNum[tn - 1] + TempNum[tn];
-	//	printf("Plus : %d\n", restmp);
-	//	break;
-	//case '-':
-	//	restmp = TempNum[tn - 1] - TempNum[tn];
-	//	printf("Sub : %d\n", restmp);
-	//	break;
-	//case '*':
-	//	restmp = TempNum[tn - 1] * TempNum[tn];
-	//	printf("Mul : %d\n", restmp);
-	//	break;
-	//case '/':
-	//	restmp = TempNum[tn - 1] / TempNum[tn];
-	//	printf("Div : %d\n", restmp);
-	//	break;
-	//}
-
-	tmpnum1 = NumStackPop();
-	tmpnum2 = NumStackPop();
-
-	tmpsym1 = SymStackPop();
-		
-
-	
-
 
 }
 
