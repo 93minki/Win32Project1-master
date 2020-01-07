@@ -1,5 +1,5 @@
 // Win32Project1.cpp : 응용 프로그램에 대한 진입점을 정의합니다.
-//
+// 5차 수정 (20.01.07)
 
 #include "stdafx.h"
 #include "Win32Project1.h"
@@ -126,7 +126,7 @@ bool IsSymStackFull() {
 	}
 }
 
-void NumStackPush(char value) {
+void NumStackPush(float value) {
 	if (IsNumStackFull() == true) {
 		printf("Num Stack is Full!\n");
 	}
@@ -215,6 +215,9 @@ void InitTempArray() {
 	// Initialize Temp Array
 	for (int i = 0; i < sizeof(TempArray); i++) {
 		TempArray[i] = '\0';
+		if (TempArray[i + 1] == '\0') {
+			return;
+		}
 	}
 	
 }
@@ -227,11 +230,11 @@ void CheckFormula(HWND hDlg,int num) {
 }
 
 void Calculation() {
-	int pop1;
-	int pop2;
+	float pop1;
+	float pop2;
 	char opr;
+	float rst;
 
-	int rst;
 	pop1 = NumStackPop();
 	pop2 = NumStackPop();
 	opr = SymStackPop();
@@ -269,7 +272,6 @@ int makePriority(char symbol) {
 	case '/':
 		priority = 1;
 		break;
-
 	}
 	return priority;
 }
@@ -279,8 +281,6 @@ void GetExp(HWND hDlg) {
 	printf("Get Number : %s\n", InputNum);
 	printf("Size of Stack : %d\n", GetStackSize());
 	int StackSize = GetStackSize();
-	int tn = 0;
-	int ts = 0;
 	int oldpr = 4;
 	int hpr = 0;
 	int pr;
@@ -290,7 +290,6 @@ void GetExp(HWND hDlg) {
 	int rst = 0;
 	char opr;
 
-	char ttt;
 	for (int i = 0; i < StackSize; i++) {
 		// if Stack Value is Sign 
 		if (InputNum[i] == '+' || InputNum[i] == '-' || InputNum[i] == '*' || InputNum[i] == '/') {
@@ -300,7 +299,8 @@ void GetExp(HWND hDlg) {
 				TempArray[tp] = InputNum[Search_n];
 			}
 			Search_n = Search_s + 1;
-			NumStackPush(atoi(TempArray));											// 피연산자를 스택에 쌓는다.
+			NumStackPush(atof(TempArray));											// 피연산자를 스택에 쌓는다.
+			InitTempArray();
 			if (calcFlag) {
 				Calculation();
 				calcFlag = false;
@@ -311,7 +311,8 @@ void GetExp(HWND hDlg) {
 				oldpr = pr;
 			}
 			else if (oldpr < pr) {													// 새로운 연산자 우선순위가 기존 우선순위 보다 높을 경우 */ -> +-
-
+				Calculation();
+				SymStackPush(InputNum[i]);
 			}
 			else if (oldpr == pr) {													// 새로운 연산자 우선순위가 기존 우선순위와 같을 경우
 				SymStackPush(InputNum[i]);
@@ -320,7 +321,6 @@ void GetExp(HWND hDlg) {
 			}
 			else if (oldpr > pr) {													// 새로운 연산자 우선순위가 기존 우선순위 보다 낮을 경우 +- -> */
 				SymStackPush(InputNum[i]);
-				InitTempArray();
 				hpr = pr;
 				calcFlag = true;
 			}
@@ -328,17 +328,18 @@ void GetExp(HWND hDlg) {
 
 		if (InputNum[i + 1] == '\0') {
 			Search_s = i + 1;
+			InitTempArray();
 			for (int tp = 0; Search_n < Search_s; Search_n++, tp++) {
 				TempArray[tp] = InputNum[Search_n];
 			}
-			NumStackPush(atoi(TempArray));											// 피연산자를 스택에 쌓는다.
+			NumStackPush(atof(TempArray));											// 피연산자를 스택에 쌓는다.
 			if (calcFlag) {
 				Calculation();
 				calcFlag = false;
 			}
-			//TempNum[tn] = atoi(TempArray);
+			//TempNum[tn] = atof(TempArray);
 			for(int x = 0 ; x<MAX_STACK_SIZE;x++){
-				/*NumStackPush(atoi(TempArray));*/
+				/*NumStackPush(atof(TempArray));*/
 				Calculation();
 				if (IsSymStackEmpty) {
 					printf("NumStack : %s\n", StackNum);
@@ -354,7 +355,6 @@ void GetExp(HWND hDlg) {
 
 			printf("NumStack[0] = %d \n", StackNum[0]);
 			InitTempArray();
-
 
 			SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0],TRUE);
 			
