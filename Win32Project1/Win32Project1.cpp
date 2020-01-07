@@ -29,7 +29,7 @@ int nsp = -1;
 int ssp = -1;
 int priority;
 
-
+bool fclean = false;
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 //ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -322,9 +322,10 @@ void GetExp(HWND hDlg) {
 				if (IsSymStackEmpty()) {
 					InitTempArray();
 					printf("StackNum[0] : %f", StackNum[0]);
-					sprintf(showfloat, "%f", StackNum[0]);
+					sprintf(showfloat, "%0.2f", StackNum[0]);
 					//SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0], TRUE);
 					SetDlgItemText(hDlg, IDC_EDIT2, showfloat);
+					fclean = true;
 					break;
 				}
 			}
@@ -355,6 +356,15 @@ void rmArray(HWND hDlg) {
 }
 
 void ClearArray(HWND hDlg) {
+	if (fclean) {
+
+	}
+	for (int a = 0; a < sizeof(InputNum); a++) {
+		InputNum[a] = '\0';
+	}
+	InputNum[0] = '0';
+	SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
+	np = 0;
 	//for (int a = 0; a < sizeof(InputNum); a++) {
 	//	InputNum[a] = '\0';
 	//}
