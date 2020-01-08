@@ -1,5 +1,6 @@
 // Win32Project1.cpp : 응용 프로그램에 대한 진입점을 정의합니다.
-// 5차 수정 (20.01.07)
+// 7차 수정 (20.01.08)
+// -연산 문제
 
 #include "stdafx.h"
 #include "Win32Project1.h"
