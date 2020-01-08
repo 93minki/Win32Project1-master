@@ -153,14 +153,14 @@ char SymStackPop() {
 }
 
 
-void showNum(char num, HWND hDlg) {
+void ShowNum(char num, HWND hDlg) {
 	InputNum[np] = num;
 	np++;
 	SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
 
 }
 
-void showDot(char dot, HWND hDlg) {
+void ShowDot(char dot, HWND hDlg) {
 	if (InputNum[np] == '.') {
 		return;
 	}
@@ -171,7 +171,7 @@ void showDot(char dot, HWND hDlg) {
 	SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
 }
 
-void showSign(char sign, HWND hDlg) {
+void ShowSign(char sign, HWND hDlg) {
 	if (InputNum[np-1] == '+' || InputNum[np-1] == '-' || InputNum[np-1] == '*' || InputNum[np-1] == '/') {
 		InputNum[np-1] = sign;
 	}
@@ -321,8 +321,8 @@ void GetExp(HWND hDlg) {
 				Calculation();
 				if (IsSymStackEmpty()) {
 					InitTempArray();
-					printf("StackNum[0] : %f", StackNum[0]);
-					sprintf(showfloat, "%0.2f", StackNum[0]);
+					printf("StackNum[0] : %f\n", StackNum[0]);
+					sprintf(showfloat, "%0.2f",StackNum[0]);
 					//SetDlgItemInt(hDlg, IDC_EDIT2, StackNum[0], TRUE);
 					SetDlgItemText(hDlg, IDC_EDIT2, showfloat);
 					fclean = true;
@@ -333,13 +333,13 @@ void GetExp(HWND hDlg) {
 	}
 }
 
-void showOutput(HWND hDlg) {
+void ShowOutput(HWND hDlg) {
 	
 	GetExp(hDlg);
 
 }
 
-void rmArray(HWND hDlg) {
+void RmArray(HWND hDlg) {
 	if (np == 0)
 	{
 		return;
@@ -357,31 +357,21 @@ void rmArray(HWND hDlg) {
 
 void ClearArray(HWND hDlg) {
 	if (fclean) {
-
+		NumStackPop();												// 결과값을 빼낸다. 그냥 빼냄 의미 없음
+		priority = 0;
 	}
 	for (int a = 0; a < sizeof(InputNum); a++) {
+		if (InputNum[a] == '\0') {
+			break;
+		}
 		InputNum[a] = '\0';
 	}
 	InputNum[0] = '0';
-	SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
 	np = 0;
-	//for (int a = 0; a < sizeof(InputNum); a++) {
-	//	InputNum[a] = '\0';
-	//}
-	//for (int a = 0; a < MAX_STACK_SIZE; a++) {
-	//	StackNum[a] = '\0';
-	//	StackSymbol[a] = '\0';
-	//	if (StackNum[a] == '\0' && StackSymbol[a] == '\0') {
-	//		break;
-	//	}
-	//}
-	//nsp = 0;
-	//ssp = 0;
-	//np = 0;
-	////int i = 0;
-	//SetDlgItemText(hDlg, IDC_EDIT1, InputNum);
-	//
-	//printf("InputNum : %s \n", InputNum);
+	Search_n = 0;
+	Search_s = 0;
+	SetDlgItemText(hDlg, IDC_EDIT1, "0");
+	SetDlgItemText(hDlg, IDC_EDIT2, "0");
 }
 // 정보 대화 상자의 메시지 처리기입니다.
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -393,71 +383,72 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_INITDIALOG:
 
 		SetDlgItemText(hDlg, IDC_EDIT1, "0");
+		SetDlgItemText(hDlg, IDC_EDIT2, "0");
 		printf("init\n");
 		return (INT_PTR)TRUE;
-
+		
 	case WM_COMMAND:
 		//printf("btn0\n");
 		switch (LOWORD(wParam)) {
 		case IDC_BUTTON1:	// 0
 			printf("0\n");
-			showNum('0', hDlg);
+			ShowNum('0', hDlg);
 			break;
 		case IDC_BUTTON2:	// .
 			printf(".\n");
-			showDot('.', hDlg);
+			ShowDot('.', hDlg);
 			break;
 		case IDC_BUTTON3:	// Enter
 			printf("Enter\n");
-			showOutput(hDlg);
+			ShowOutput(hDlg);
 			break;
 		case IDC_BUTTON4:	// 1
 			printf("1\n");
-			showNum('1', hDlg);
+			ShowNum('1', hDlg);
 			break;
 		case IDC_BUTTON5:	// 2
 			printf("2\n");
-			showNum('2', hDlg);
+			ShowNum('2', hDlg);
 			break;
 		case IDC_BUTTON6:	// 3
 			printf("3\n");
-			showNum('3', hDlg);
+			ShowNum('3', hDlg);
 			break;
 		case IDC_BUTTON7:	// 4
 			printf("4\n");
-			showNum('4', hDlg);
+			ShowNum('4', hDlg);
 			break;
 		case IDC_BUTTON8:	// 5
 			printf("5\n");
-			showNum('5', hDlg);
+			ShowNum('5', hDlg);
 			break;
 		case IDC_BUTTON9:	// 6
 			printf("6\n");
-			showNum('6', hDlg);
+			ShowNum('6', hDlg);
 			break;
 		case IDC_BUTTON10:	// 7
 			printf("7\n");
-			showNum('7', hDlg);
+			ShowNum('7', hDlg);
 			break;
 		case IDC_BUTTON11:	// 8
 			printf("8\n");
-			showNum('8', hDlg);
+			ShowNum('8', hDlg);
 			break;
 		case IDC_BUTTON12:	// 9
 			printf("9\n");
-			showNum('9', hDlg);
+			ShowNum('9', hDlg);
 			break;
 		case IDC_BUTTON13:	// /
 			printf("/\n");
-			showSign('/', hDlg);
+			ShowSign('/', hDlg);
 			break;
 		case IDC_BUTTON14:	// *
 			printf("*\n");
-			showSign('*', hDlg);
+			ShowSign('*', hDlg);
 			break;
 		case IDC_BUTTON15:	// -
 			printf("-\n");
-			showSign('-', hDlg);
+			ShowSign('-', hDlg);
 			break;
 		case IDC_BUTTON16:	// Clear
 			printf("Clear\n");
@@ -465,11 +456,11 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case IDC_BUTTON17:	// +
 			printf("+\n");
-			showSign('+', hDlg);
+			ShowSign('+', hDlg);
 			break;
 		case IDC_BUTTON18:	// C
 			printf("C\n");
-			rmArray(hDlg);
+			RmArray(hDlg);
 			break;
 		}
 		break;
